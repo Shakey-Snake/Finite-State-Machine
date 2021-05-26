@@ -107,27 +107,27 @@ public class REcompile {
         //Generalised test that, if something went wrong, it breaks to the end of the program and throws an exception.
         try
         {
-            //Checks to see if there was an expression given to process. If none, break from the program.
+            //Checks to see if there was a valid expression given to process. If none, break from the program.
             if(args.length == 0)
             {
-                System.out.println("Error: No command line arguments given. Please enter a regular expression.");
+                System.err.println("Error: No command line arguments given. Please enter a regular expression.");
+                return;
+
+            }
+            else if (args.length > 1)
+            {
+                System.err.println("Error: Invalid regular expression as it contains spaces. Please enter a valid regular expression.");
                 return;
 
             }
 
             //------------------------------------------------- Variables ----------------------------------------------
 
-            //Joins multiple expressions into one if multiple are given.
-            String regularExpression = String.join("", args);
-
             //Splits the expression into an array so they can be processed.
-            String[] splitExpression = regularExpression.split("", 2147483647);
+            String[] splitExpression = args[0].split("", 2147483647);
 
             //Storage for the expressions being worked on.
             String currentExpression, nextExpression = "";
-
-            //Where the broken expression is reformed.
-            String reformedExpression = "";
 
             //The list that stores the FSM output, to be later outputted.
             List<ExpressionRecord> FSMOutput = new ArrayList<>();
@@ -142,16 +142,10 @@ public class REcompile {
             {
                 //
 
+
             }
 
             //--------------------------------------------------- Output -----------------------------------------------
-
-            //Checks if the string is correctly reformed.
-            if(reformedExpression.contentEquals(regularExpression))
-            {
-                System.out.println("String correctly reformed!");
-
-            }
 
             //Prints the entire FSM to System.out.
             for (ExpressionRecord output : FSMOutput)
