@@ -35,7 +35,11 @@ public class REcompile {
             this.stateNumber = stateNumber;
             this.literal = literal;
             this.branchOne = branchOne;
-            this.branchTwo = branchTwo;
+
+            if(branchTwo == -1)
+                this.branchTwo = null;
+            else
+                this.branchTwo = branchTwo;
 
         }
 
@@ -97,8 +101,6 @@ public class REcompile {
 
     //---------------------------------------------------- REcomplie class ----------------------------------------------
 
-    //https://www.geeksforgeeks.org/split-string-java-examples/
-
     //
 
     //Main program
@@ -117,11 +119,58 @@ public class REcompile {
 
             //------------------------------------------------- Variables ----------------------------------------------
 
+            //None yet*.
+
+            //-------------------------------------------- Expression validation ---------------------------------------
+
             //Joins multiple expressions into one if multiple are given.
             String regularExpression = String.join("", args);
 
             //Splits the expression into an array so they can be processed.
             String[] splitExpression = regularExpression.split("", 2147483647);
+
+            //Loop through the expression to check its validity.
+            for(int i = 0; i <= splitExpression.length; i++)
+            {
+                //
+                int stateNumber = i++;
+
+                //
+                char currentExpression = splitExpression[i];
+
+                //
+                char nextExpression = splitExpression[i++];
+
+                //
+                switch(currentExpression)
+                {
+                    case ('('):
+                    {
+
+                        break;
+                    }
+                    case ('{'):
+                    {
+
+                        break;
+                    }
+                    case (''):
+                    {
+
+                        break;
+                    }
+
+                }
+
+            }
+
+            //---------------------------------------------- FSM calculations ------------------------------------------
+
+            //The list that stores the FSM output, to be later outputted.
+            List<ExpressionRecord> FSMOutput = new ArrayList<ExpressionRecord>();
+
+            //Adds the 0's state to the FSM.
+            FSMOutput.add(new ExpressionRecord(0, "", 1, -1));
 
             //Storage for the expressions being worked on.
             String currentExpression, nextExpression = "";
@@ -129,18 +178,80 @@ public class REcompile {
             //Where the broken expression is reformed.
             String reformedExpression = "";
 
-            //The list that stores the FSM output, to be later outputted.
-            List<ExpressionRecord> FSMOutput = new ArrayList<>();
-
-            //Adds the 0's state to the FSM.
-            FSMOutput.add(new ExpressionRecord(0, "-1", 1, -1));
-
-            //---------------------------------------------- FSM calculations ------------------------------------------
+            //Keeps track if the last character seen was an \
+            boolean escaped = false;
 
             //Loop through the expression and formulate the FSM.
-            for(int i = 0; i < splitExpression.length; i++)
+            for(int i = 0; i <= splitExpression.length; i++)
             {
                 //
+                int stateNumber = i++;
+
+                //
+                char currentExpression = splitExpression[i];
+
+                //
+                char nextExpression = splitExpression[i++];
+
+                //
+                if(escaped = false)
+                {
+                    //Checks for the proceding character.
+                    switch(currentExpression)
+                    {
+                        case ('\\'): {
+                            escaped = true;
+
+                            break;
+
+                        }
+                        case ('('): {
+
+                            break;
+
+                        }
+                        case ('{'): {
+
+                            break;
+
+                        }
+
+                    }
+
+                    //Checks for the post-character character.
+                    switch(nextExpression)
+                    {
+                        case ('*'):{
+
+                            break;
+
+                        }
+                        case ('+'): {
+
+                            break;
+
+                        }
+                        case ('?'): {
+
+                            break;
+
+                        }
+                        case ('|'): {
+
+                            break;
+
+                        }
+
+                    }
+                    else
+                    {
+                        escaped = false;
+
+                    }
+
+
+
+                }
 
             }
 
@@ -154,14 +265,14 @@ public class REcompile {
             }
 
             //Prints the entire FSM to System.out.
-            for (ExpressionRecord output : FSMOutput)
+            for(ExpressionRecord output : FSMOutput)
             {
                 System.out.println(output.toString()); //Yes I know it would call it anyway but it just LOOKS better, ya know?
 
             }
 
         }
-        catch (Exception exception)
+        catch(Exception exception)
         {
             exception.printStackTrace();
 
