@@ -194,11 +194,9 @@ public class REcompile {
                 char nextExpression = splitExpression[i++];
 
                 //
-                if(escaped = false)
-                {
+                if(escaped = false) {
                     //Checks for the proceding character.
-                    switch(currentExpression)
-                    {
+                    switch (currentExpression) {
                         case ('\\'): {
                             escaped = true;
 
@@ -219,9 +217,8 @@ public class REcompile {
                     }
 
                     //Checks for the post-character character.
-                    switch(nextExpression)
-                    {
-                        case ('*'):{
+                    switch (nextExpression) {
+                        case ('*'): {
 
                             break;
 
@@ -243,13 +240,11 @@ public class REcompile {
                         }
 
                     }
-                    else
-                    {
-                        escaped = false;
 
-                    }
-
-
+                }
+                else
+                {
+                    escaped = false;
 
                 }
 
