@@ -95,9 +95,11 @@ public class REsearch {
         while (count < top) {
             queue = new int[0];
             currState = new int[0];
+            
             // innerCount to increase where the
             int innerCount = count;
             comp = "";
+
             // adds first state
             currState = arrAdd(stateNum[0], currState);
 
@@ -105,70 +107,47 @@ public class REsearch {
             // loop to check if there are no more remaining current states
             outer: while (currState.length > 0) {
 
-                // gets the next place in the array that needs to be checked
                 int checkState = currState[currState.length - 1];
 
-                // System.out.println(charC[checkState]);
-                System.out.println(checkState);
+                System.out.println("current checkstate " + checkState);
 
                 // on branch, push both to array
                 if (charC[checkState].equals("-1")) {
                     if (branchState[checkState] == -1) {
                         System.out.println("FINAL: " + comp);
-                        // on success, increase count by inner count
-                        // System.out.println("count: " + count + innerCount);
                         count = innerCount - 1;
                         break outer;
                     }
                     int b1 = branchState[checkState];
                     int b2 = branchState2[checkState];
-                    for (int i : currState) {
-                        System.out.print("CurrState: ");
-                        System.out.print(i);
-                        System.out.println(" End Curr");
-                    }
+                    
                     currState = stackPop(currState);
-                    // add next state to queue
-                    // System.out.println("b's: " + b1 + b2);
+                    
                     currState = arrAdd(b1, currState);
                     currState = arrAdd(b2, currState);
 
-                    for (int i : currState) {
-                        System.out.print("CurrState: ");
-                        System.out.print(i);
-                        System.out.println(" End Curr");
-                    }
+                    checkState = currState[currState.length - 1];
+                    System.out.println("new checkstate from branch command " + checkState);
                 }
 
-                // System.out.println("equal" + charC[checkState] + " " +
-                // String.valueOf(textFile[innerCount]));
 
                 if (charC[checkState].equals(String.valueOf(textFile[innerCount]))) {
-                    // System.out.print("equal");
-                    // find the next state by getting the branch state number which relates to the
-                    // place in the array
+                    System.out.println("equal on " + checkState);
                     int nextState = branchState[checkState];
-                    currState = stackPop(currState);
                     // add next state to queue
                     queue = arrAdd(nextState, queue);
+                    currState = new int[0];
                     innerCount++;
                     comp = comp.concat(charC[checkState]);
                 }
+                else{
+                    currState = stackPop(currState);
+                }
 
-                /*
-                 * for (int i : queue) { System.out.print("Q: "); System.out.print(i);
-                 * System.out.println(" End Q"); }
-                 */
-
-                if (queue.length > 0) {
-                    for (int i : currState) {
-                        System.out.print("CurrState: ");
-                        System.out.print(i);
-                        System.out.println(" End Curr");
-                    }
+                if (queue.length > 0 && currState.length == 0) {
                     currState = queue;
                     queue = new int[0];
-                } else if (queue.length == 0) {
+                } else if (queue.length == 0 && currState.length == 0) {
                     break outer;
                 }
             }
@@ -226,10 +205,21 @@ public class REsearch {
 
     private int[] stackPop(int[] arr) {
         int[] temp = arr;
-        arr = new int[temp.length];
-        for (int i = 0; i < temp.length; i++) {
+
+        if(temp.length == 1){
+            arr = new int[0];
+            return arr;
+        }
+
+        arr = new int[temp.length - 1];
+        for (int i = 0; i < temp.length - 1; i++) {
             arr[i] = temp[i];
         }
+
+        for (int i : arr) {
+            System.out.println(i);
+        }
+
         return arr;
     }
 }
