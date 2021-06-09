@@ -1,18 +1,13 @@
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Scanner;
 
 public class REsearch {
 
     char[] textFile = new char[100];
     int top = 0;
 
-    int[] stateNum = new int[0];
-    String[] charC = new String[0];
-    int[] branchState = new int[0];
-    int[] branchState2 = new int[0];
+    FSMpoint[] arr = new FSMpoint[0];
 
     int[] currState = new int[0];
     int[] queue = new int[0];
@@ -24,7 +19,11 @@ public class REsearch {
 
     int scan = -1;
 
-    String comp;
+    int lineCount = 0;
+    int count = 0;
+
+
+    String comp = "";
 
     String[] test = { "0,a,3,-1", "1,b,4,-1", "2,a,4,-1", "3,-1,1,2", "4,-1,-1,-1" };
     // String[] test = {"0,a,1", "1,-1,-1"};
@@ -53,109 +52,98 @@ public class REsearch {
          */
         searchAlt();
     }
-
-    /*
-     * COULD HAVE SEPERATE VARIABLE CALLED SCAN!!!!!! First state gets added to the
-     * currState. Mark first state as 1. Push firstState stateNum onto currState,
-     * then checks that checkChar[currState] == character. If it's equal, then add
-     * the next state to botQueue and set the state as 1. Pop off the state and
-     * check if there are other states. If only state remaining is scan then pop it
-     * off. Check if botQueue contains states, if it does, transfer it to currState.
-     * 
-     * Pop off first state on currState, if it is a branch state, then add the 2
-     * states onto currState. Otherwise check char
-     */
-
-    /* It ends when, end of file, mismatch, */
-
+    
     private void searchAlt() throws IOException {
         for (String i : test) {
             String[] lineSplit = i.split(",");
-            stateNum = arrAdd(Integer.parseInt(lineSplit[0]), stateNum);
-            charC = arrAdd(lineSplit[1], charC);
-            branchState = arrAdd(Integer.parseInt(lineSplit[2]), branchState);
-            branchState2 = arrAdd(Integer.parseInt(lineSplit[3]), branchState2);
+            FSMpoint item = new FSMpoint(Integer.parseInt(lineSplit[0]), lineSplit[1], Integer.parseInt(lineSplit[2]), Integer.parseInt(lineSplit[3]));
+            arr = arrAdd(item, arr);
         }
+        /*(for (FSMpoint i : arr) {
+            System.out.println(i.stateNum + i.charMatch + i.bState1 + i.bState2);
+        }*/
 
         BufferedReader in = new BufferedReader(new FileReader(file));
-        int c = 0;
 
-        // reads in txt file to array
-        while ((c = in.read()) != -1) {
-            textFile[top] = (char) c;
-            top++;
+        while ((line=in.readLine())!=null)  {
+            count = 0;
+            //increment array to show what line the string was found on
+            lineCount++;
+            
+            char[] lineArray = new char[line.length()];
+
+            //convert the 
+            for (int i = 0; i < line.length(); i++) {
+                lineArray[i] = line.charAt(i);
+            }
+
+            int innerCount = 0;
+
+            //loop to check if the whole line has been searched.
+            outer:  while (count < lineArray.length){
+
+                //System.out.println("Checking line: " + lineCount);
+                queue = new int[0];
+                currState = new int[0];
+                comp = "";
+                innerCount = count;
+                // adds first state
+                currState = arrAdd(arr[0].stateNum, currState);
+
+                inner: while (currState.length > 0) {
+
+                    int checkState = currState[currState.length - 1];
+
+                    //System.out.println("current checkstate " + checkState);
+
+                    if (arr[checkState].charMatch.equals("-1")) {
+                        if (arr[checkState].bState1 == -1) {
+                            System.out.println("Match: " + comp + " on line: " + lineCount);
+                            break outer;
+                        }
+                        int b1 = arr[checkState].bState1;
+                        int b2 = arr[checkState].bState2;
+                        
+                        currState = stackPop(currState);
+                        
+                        currState = arrAdd(b1, currState);
+                        currState = arrAdd(b2, currState);
+
+                        checkState = currState[currState.length - 1];
+                        //System.out.println("new checkstate from branch command " + checkState);
+                    }
+
+                    //System.out.println("match: " + arr[checkState].charMatch + " with " + String.valueOf(lineArray[innerCount]));
+
+                    if (arr[checkState].charMatch.equals(String.valueOf(lineArray[innerCount]))) {
+                        //System.out.println("equal on " + checkState);
+                        int nextState = arr[checkState].bState1;
+                        // add next state to queue
+                        queue = arrAdd(nextState, queue);
+                        currState = new int[0];
+                        innerCount++;
+                        comp = comp.concat(arr[checkState].charMatch);
+                    }
+                    else{
+                        currState = stackPop(currState);
+                    }
+
+                    if (queue.length > 0 && currState.length == 0) {
+                        currState = queue;
+                        queue = new int[0];
+                    } 
+                    else if (queue.length == 0 && currState.length == 0) {
+                        break inner;
+                    }
+                }
+                count++;
+            }
         }
 
         in.close();
-
-        // count indicates place in array
-        int count = 0;
-
-        // loop to check if file has ended
-        while (count < top) {
-            queue = new int[0];
-            currState = new int[0];
-            
-            // innerCount to increase where the
-            int innerCount = count;
-            comp = "";
-
-            // adds first state
-            currState = arrAdd(stateNum[0], currState);
-
-            // System.out.print("count: " + count + innerCount);
-            // loop to check if there are no more remaining current states
-            outer: while (currState.length > 0) {
-
-                int checkState = currState[currState.length - 1];
-
-                System.out.println("current checkstate " + checkState);
-
-                // on branch, push both to array
-                if (charC[checkState].equals("-1")) {
-                    if (branchState[checkState] == -1) {
-                        System.out.println("FINAL: " + comp);
-                        count = innerCount - 1;
-                        break outer;
-                    }
-                    int b1 = branchState[checkState];
-                    int b2 = branchState2[checkState];
-                    
-                    currState = stackPop(currState);
-                    
-                    currState = arrAdd(b1, currState);
-                    currState = arrAdd(b2, currState);
-
-                    checkState = currState[currState.length - 1];
-                    System.out.println("new checkstate from branch command " + checkState);
-                }
-
-
-                if (charC[checkState].equals(String.valueOf(textFile[innerCount]))) {
-                    System.out.println("equal on " + checkState);
-                    int nextState = branchState[checkState];
-                    // add next state to queue
-                    queue = arrAdd(nextState, queue);
-                    currState = new int[0];
-                    innerCount++;
-                    comp = comp.concat(charC[checkState]);
-                }
-                else{
-                    currState = stackPop(currState);
-                }
-
-                if (queue.length > 0 && currState.length == 0) {
-                    currState = queue;
-                    queue = new int[0];
-                } else if (queue.length == 0 && currState.length == 0) {
-                    break outer;
-                }
-            }
-            count++;
-        }
     }
 
-    private void search() throws IOException {
+    /*private void search() throws IOException {
 
         BufferedReader in = new BufferedReader(new FileReader(file));
         int c = 0;
@@ -181,11 +169,11 @@ public class REsearch {
                 }
             }
         }
-    }
+    }*/
 
-    private String[] arrAdd(String item, String[] arr) {
-        String[] temp = arr;
-        arr = new String[temp.length + 1];
+    private FSMpoint[] arrAdd(FSMpoint item, FSMpoint[] arr) {
+        FSMpoint[] temp = arr;
+        arr = new FSMpoint[temp.length + 1];
         for (int i = 0; i < temp.length; i++) {
             arr[i] = temp[i];
         }
@@ -216,10 +204,20 @@ public class REsearch {
             arr[i] = temp[i];
         }
 
-        for (int i : arr) {
-            System.out.println(i);
-        }
-
         return arr;
+    }
+
+    class FSMpoint {
+        public int stateNum;
+        public String charMatch;
+        public int bState1;
+        public int bState2;
+
+        FSMpoint (int stateNum, String charMatch, int bState1, int bState2){
+            this.stateNum = stateNum;
+            this.charMatch = charMatch;
+            this.bState1 = bState1;
+            this.bState2 = bState2;
+        }
     }
 }
