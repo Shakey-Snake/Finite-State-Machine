@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Scanner;
 
 public class REsearch {
 
@@ -15,13 +16,14 @@ public class REsearch {
     // boolean[] mark = new boolean[stateNum.length];
 
     String line;
+    String scline;
+
     String file = "";
 
     int scan = -1;
 
     int lineCount = 0;
     int count = 0;
-
 
     String comp = "";
 
@@ -50,18 +52,18 @@ public class REsearch {
          * 4){ branchState2 = arrAdd(Integer.parseInt(lineSplit[3]), branchState2); } }
          * sc.close();
          */
-        searchAlt();
+        search();
     }
     
-    private void searchAlt() throws IOException {
+    /*private void searchAlt() throws IOException {
         for (String i : test) {
             String[] lineSplit = i.split(",");
             FSMpoint item = new FSMpoint(Integer.parseInt(lineSplit[0]), lineSplit[1], Integer.parseInt(lineSplit[2]), Integer.parseInt(lineSplit[3]));
             arr = arrAdd(item, arr);
         }
-        /*(for (FSMpoint i : arr) {
+        (for (FSMpoint i : arr) {
             System.out.println(i.stateNum + i.charMatch + i.bState1 + i.bState2);
-        }*/
+        }
 
         BufferedReader in = new BufferedReader(new FileReader(file));
 
@@ -141,35 +143,97 @@ public class REsearch {
         }
 
         in.close();
-    }
+    }*/
 
-    /*private void search() throws IOException {
+    private void search() throws IOException {
 
+        Scanner sc = new Scanner(System.in);
+		while (sc.hasNext()) {
+			scline = sc.nextLine();
+			String[] lineSplit = scline.split(",");
+            FSMpoint item = new FSMpoint(Integer.parseInt(lineSplit[0]), lineSplit[1], Integer.parseInt(lineSplit[2]), Integer.parseInt(lineSplit[3]));
+            arr = arrAdd(item, arr);
+		}
+        
         BufferedReader in = new BufferedReader(new FileReader(file));
-        int c = 0;
 
-        while ((c = in.read()) != -1) {
-            currState = arrAdd(stateNum[0], currState);
+        while ((line=in.readLine())!=null)  {
+            count = 0;
+            //increment array to show what line the string was found on
+            lineCount++;
+            
+            char[] lineArray = new char[line.length()];
 
-            while (currState.length > 0) {
+            //convert the 
+            for (int i = 0; i < line.length(); i++) {
+                lineArray[i] = line.charAt(i);
+            }
 
-                char character = (char) c;
+            int innerCount = 0;
 
-                int checkState = currState[currState.length];
-                if (charC[checkState] == String.valueOf(character)) {
-                    // find the next state by getting the branch state number which relates to the
-                    // place in the array
-                    int nextState = branchState[checkState];
-                    currState = stackPop(currState);
-                    // add next state to queue
-                    queue = arrAdd(nextState, queue);
+            //loop to check if the whole line has been searched.
+            outer:  while (count < lineArray.length){
+
+                //System.out.println("Checking line: " + lineCount);
+                queue = new int[0];
+                currState = new int[0];
+                comp = "";
+                innerCount = count;
+                // adds first state
+                currState = arrAdd(arr[0].stateNum, currState);
+
+                inner: while (currState.length > 0) {
+
+                    int checkState = currState[currState.length - 1];
+
+                    //System.out.println("current checkstate " + checkState);
+
+                    if (arr[checkState].charMatch.equals("-1")) {
+                        if (arr[checkState].bState1 == -1) {
+                            System.out.println("Match: " + comp + " on line: " + lineCount);
+                            break outer;
+                        }
+                        int b1 = arr[checkState].bState1;
+                        int b2 = arr[checkState].bState2;
+                        
+                        currState = stackPop(currState);
+                        
+                        currState = arrAdd(b1, currState);
+                        currState = arrAdd(b2, currState);
+
+                        checkState = currState[currState.length - 1];
+                        //System.out.println("new checkstate from branch command " + checkState);
+                    }
+
+                    //System.out.println("match: " + arr[checkState].charMatch + " with " + String.valueOf(lineArray[innerCount]));
+
+                    if (arr[checkState].charMatch.equals(String.valueOf(lineArray[innerCount]))) {
+                        //System.out.println("equal on " + checkState);
+                        int nextState = arr[checkState].bState1;
+                        // add next state to queue
+                        queue = arrAdd(nextState, queue);
+                        currState = new int[0];
+                        innerCount++;
+                        comp = comp.concat(arr[checkState].charMatch);
+                    }
+                    else{
+                        currState = stackPop(currState);
+                    }
+
+                    if (queue.length > 0 && currState.length == 0) {
+                        currState = queue;
+                        queue = new int[0];
+                    } 
+                    else if (queue.length == 0 && currState.length == 0) {
+                        break inner;
+                    }
                 }
-                if (queue.length == 0) {
-                    break;
-                }
+                count++;
             }
         }
-    }*/
+
+        in.close();
+    }
 
     private FSMpoint[] arrAdd(FSMpoint item, FSMpoint[] arr) {
         FSMpoint[] temp = arr;
