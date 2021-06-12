@@ -173,10 +173,10 @@ public class REcompile {
             //-------------------------------------------- Expression validation ---------------------------------------
 
             //The stack that does the bracket balancing.
-            Stack<String> stack = new Stack<String>();
+            Stack<String> stack = new Stack<>();
 
             //Counts open/closed parentheses in the regular expression.
-            List<String> parenthesesBalance = new ArrayList<String>();
+            List<String> parenthesesBalance = new ArrayList<>();
 
             //Keeps track of whether the parentheses are balanced.
             int balancedParentheses = 0;
@@ -188,7 +188,7 @@ public class REcompile {
             String[] splitExpression = regularExpression.split("", 2147483647);
 
             //Storage for the expressions being worked on.
-            String currentExpression, nextExpression = "";
+            String currentExpression, nextExpression;
 
             //Where the broken expression is reformed.
             String reformedExpression = "";
@@ -197,12 +197,12 @@ public class REcompile {
             for (int i = 0; i <= splitExpression.length; i++)
             {
                 //Checks to see if the bracket is escaped.
-                if (splitExpression[i] == "\\")
+                if (splitExpression[i].equals("\\"))
                     i++;
                 else
                 {
                     //Creates an array of all of the parentheses.
-                    if (splitExpression[i] == "(" || splitExpression[i] == ")" || splitExpression[i] == "[" || splitExpression[i] == "]")
+                    if (splitExpression[i].equals("(") || splitExpression[i].equals(")") || splitExpression[i].equals("[") || splitExpression[i].equals("]"))
                         parenthesesBalance.add(splitExpression[i]);
 
                 }
@@ -210,46 +210,38 @@ public class REcompile {
             }
 
             //Loops though all of the parentheses.
-            for(int i = 0; i < parenthesesBalance.size(); i++)
-            {
+            for (String current : parenthesesBalance) {
                 //Gets the current parentheses.
-                String current = parenthesesBalance.get(i);
-
                 String parse;
 
                 //Immediately break if the first one is not an opening bracket, and thus, .
-                if (parenthesesBalance.get(0) == ")" || parenthesesBalance.get(0) != "]")
-                {
+                if (parenthesesBalance.get(0).equals(")") || parenthesesBalance.get(0).equals("]")) {
                     balancedParentheses--;
                     break;
 
                 }
 
                 //Lifo stack use for balancing parentheses.
-                if(current == "("|| current == "[")
-                {
+                if (current.equals("(") || current.equals("[")) {
                     stack.push(current);
 
                     balancedParentheses++;
 
                 }
 
-                switch(current)
-                {
-                    case ")":
-                    {
+                switch (current) {
+                    case ")": {
                         parse = stack.pop();
 
-                        if (parse == "(" || parse == "[")
+                        if (parse.equals("(") || parse.equals("["))
                             balancedParentheses--;
 
                     }
 
-                    case "]":
-                    {
+                    case "]": {
                         parse = stack.pop();
 
-                        if (parse == "(" || parse == "[")
+                        if (parse.equals("(") || parse.equals("["))
                             balancedParentheses--;
 
                     }
@@ -276,7 +268,7 @@ public class REcompile {
                 {
                     case("*"):
                     {
-                        if(nextExpression == "*")
+                        if(nextExpression.equals("*"))
                         {
                             reformedExpression += splitExpression[i];
                             i++;
@@ -286,7 +278,7 @@ public class REcompile {
                     }
                     case("+"):
                     {
-                        if(nextExpression == "+")
+                        if(nextExpression.equals("+"))
                         {
                             reformedExpression += splitExpression[i];
                             i++;
@@ -296,7 +288,7 @@ public class REcompile {
                     }
                     case("?"):
                     {
-                        if(nextExpression == "?")
+                        if(nextExpression.equals("?"))
                         {
                             reformedExpression += splitExpression[i];
                             i++;
@@ -312,11 +304,11 @@ public class REcompile {
                             i = j;
 
                             //If the next character is the closing parentheses, break.
-                            if (splitExpression[j] == "]")
+                            if (splitExpression[j].equals("]"))
                                 break;
 
                             //If there is an escaped character, skip over it.
-                            if (splitExpression[j] == "\\")
+                            if (splitExpression[j].equals("\\"))
                             {
                                 reformedExpression += splitExpression[i];
                                 j++;
@@ -331,7 +323,7 @@ public class REcompile {
                     }
                     case("|"):
                     {
-                        if(nextExpression == "|")
+                        if(nextExpression.equals("|"))
                         {
                             reformedExpression += splitExpression[i];
                             i++;
@@ -341,7 +333,7 @@ public class REcompile {
                     }
                     case("."):
                     {
-                        if(nextExpression == ".")
+                        if(nextExpression.equals("."))
                         {
                             reformedExpression += splitExpression[i];
                             i++;
@@ -359,7 +351,7 @@ public class REcompile {
             //---------------------------------------------- FSM calculations ------------------------------------------
 
             //The list that stores the FSM output, to be later outputted.
-            List<ExpressionRecord> FSMOutput = new ArrayList<ExpressionRecord>();
+            List<ExpressionRecord> FSMOutput = new ArrayList<>();
 
             //Adds the 0's state to the FSM.
             FSMOutput.add(new ExpressionRecord(0, "", 1, -1));
