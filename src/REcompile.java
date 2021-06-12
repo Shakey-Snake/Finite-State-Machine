@@ -36,73 +36,29 @@ public class REcompile {
             this.literal = literal;
             this.branchOne = branchOne;
 
-            if(branchTwo == -1)
-                this.branchTwo = null;
-            else
+            if(branchTwo != -1)
                 this.branchTwo = branchTwo;
 
-        }
-
-        //---------------------------------------------------- Get-Set -------------------------------------------------
-
-        //Gets the state number.
-        public int getStateNumber() {
-            return stateNumber;
-        }
-
-        //Sets the state number.
-        public void setStateNumber(int stateNumber) {
-            this.stateNumber = stateNumber;
-        }
-
-        //Gets the literal.
-        public String getLiteral() {
-            return literal;
-        }
-
-        //Sets the literal.
-        public void setLiteral(String literal) {
-            this.literal = literal;
-        }
-
-        //Gets the first branch.
-        public int getBranchOne() {
-            return branchOne;
-        }
-
-        //Sets the first branch.
-        public void setBranchOne(int branchOne) {
-            this.branchOne = branchOne;
-        }
-
-        //Gets the second branch.
-        public int getBranchTwo() {
-            return branchTwo;
-        }
-
-        //Sets the second branch.
-        public void setBranchTwo(int branchTwo) {
-            this.branchTwo = branchTwo;
         }
 
         //---------------------------------------------------- Methods -------------------------------------------------
 
         //
-        public String findExpression(String[] expression, int startingLocation)
+        public String[] findExpression(String expression, int startingLocation)
         {
             int r;
 
-            r = findTerm();
+            r = findTerm(expression, startingLocation);
 
-            if(isVocab(expression[startingLocation]) || expression[startingLocation]=='[')
-                findExpression();
+            if(isVocab(expression[startingLocation]) || expression[startingLocation] == "[")
+                findExpression(expression, startingLocation);
 
             return(r);
 
         }
 
         //
-        private String findTerm(String[] expression, int startingLocation
+        private String[] findTerm(String expression, int startingLocation)
         {
             int r, t1, t2, f;
 
@@ -147,7 +103,7 @@ public class REcompile {
         }
 
         //
-        private String findFactor(String[] expression, int startingLocation)
+        private String[] findFactor(String expression, int startingLocation)
         {
             int r;
 
@@ -214,11 +170,16 @@ public class REcompile {
 
             }
 
-            //------------------------------------------------- Variables ----------------------------------------------
-
-            //None yet*.
-
             //-------------------------------------------- Expression validation ---------------------------------------
+
+            //The stack that does the bracket balancing.
+            Stack<String> stack = new Stack<String>();
+
+            //Counts open/closed parentheses in the regular expression.
+            List<String> parenthesesBalance = new ArrayList<String>();
+
+            //Keeps track of whether the parentheses are balanced.
+            int balancedParentheses = 0;
 
             //Joins multiple expressions into one if multiple are given.
             String regularExpression = String.join("", args);
@@ -232,67 +193,164 @@ public class REcompile {
             //Where the broken expression is reformed.
             String reformedExpression = "";
 
+            //Counts how many of each parentheses there are.
+            for (int i = 0; i <= splitExpression.length; i++)
+            {
+                //Checks to see if the bracket is escaped.
+                if (splitExpression[i] == "\\")
+                    i++;
+                else
+                {
+                    //Creates an array of all of the parentheses.
+                    if (splitExpression[i] == "(" || splitExpression[i] == ")" || splitExpression[i] == "[" || splitExpression[i] == "]")
+                        parenthesesBalance.add(splitExpression[i]);
+
+                }
+
+            }
+
+            //Loops though all of the parentheses.
+            for(int i = 0; i < parenthesesBalance.size(); i++)
+            {
+                //Gets the current parentheses.
+                String current = parenthesesBalance.get(i);
+
+                String parse;
+
+                //Immediately break if the first one is not an opening bracket, and thus, .
+                if (parenthesesBalance.get(0) == ")" || parenthesesBalance.get(0) != "]")
+                {
+                    balancedParentheses--;
+                    break;
+
+                }
+
+                //Lifo stack use for balancing parentheses.
+                if(current == "("|| current == "[")
+                {
+                    stack.push(current);
+
+                    balancedParentheses++;
+
+                }
+
+                switch(current)
+                {
+                    case ")":
+                    {
+                        parse = stack.pop();
+
+                        if (parse == "(" || parse == "[")
+                            balancedParentheses--;
+
+                    }
+
+                    case "]":
+                    {
+                        parse = stack.pop();
+
+                        if (parse == "(" || parse == "[")
+                            balancedParentheses--;
+
+                    }
+
+                }
+
+            }
+
+            //If the parentheses are unbalanced, break from the program.
+            if (balancedParentheses != 0)
+                throw new Exception("Error: The parentheses in the regular expression are unbalanced. Please balances them before continuing.");
+
             //Loop through the expression to check its validity.
             for(int i = 0; i <= splitExpression.length; i++)
             {
-//                //Counts open/closed parentheses in the regular expression.
-//                int open, close;
-//
-//                //Counts how many of each parentheses there are.
-//                for (int j = 0; j <= splitExpression.length; j++)
-//                {
-//                    //Checks to see if the bracket is escaped.
-//                    if (c == '\\')
-//                    {
-//                        j++;
-//
-//                    }
-//                    else
-//                    {
-//                        if (c == "(")
-//                            open++;
-//
-//                        if (c == ")")
-//                            close++;
-//                    }
-//
-//                }
-//
-//                //If the parentheses are uneven then there is no point to see if they are correctly formated, because they can not be.
-//                if (open.equals(close) == false)
-//                {
-//                    System.err.println("Error: Unbalanced parentheses within the regular expression.");
-//                    break;
-//
-//                }
-
-                //
-                int stateNumber = i++;
-
-                //
+                //The current character.
                 currentExpression = splitExpression[i];
 
-                //
-                nextExpression = splitExpression[i++];
+                //The next character.
+                nextExpression = splitExpression[i + 1];
 
-                //
+                //Mainly removing double ups of special characters.
                 switch(currentExpression)
                 {
-                    case ('('):
+                    case("*"):
                     {
+                        if(nextExpression == "*")
+                        {
+                            reformedExpression += splitExpression[i];
+                            i++;
 
-                        break;
+                        }
+
                     }
-                    case ('{'):
+                    case("+"):
                     {
+                        if(nextExpression == "+")
+                        {
+                            reformedExpression += splitExpression[i];
+                            i++;
 
-                        break;
+                        }
+
                     }
-                    case (''):
+                    case("?"):
                     {
+                        if(nextExpression == "?")
+                        {
+                            reformedExpression += splitExpression[i];
+                            i++;
 
-                        break;
+                        }
+
                     }
+                    case("["):
+                    {
+                        for (int j = i + 1; j <= splitExpression.length; j++)
+                        {
+                            //Keep i in line with j.
+                            i = j;
+
+                            //If the next character is the closing parentheses, break.
+                            if (splitExpression[j] == "]")
+                                break;
+
+                            //If there is an escaped character, skip over it.
+                            if (splitExpression[j] == "\\")
+                            {
+                                reformedExpression += splitExpression[i];
+                                j++;
+
+                            }
+                            //Else, add it as a literal on the reformed expression.
+                            else
+                                reformedExpression += splitExpression[i];
+
+                        }
+
+                    }
+                    case("|"):
+                    {
+                        if(nextExpression == "|")
+                        {
+                            reformedExpression += splitExpression[i];
+                            i++;
+
+                        }
+
+                    }
+                    case("."):
+                    {
+                        if(nextExpression == ".")
+                        {
+                            reformedExpression += splitExpression[i];
+                            i++;
+
+                        }
+
+                    }
+                    default:
+                        reformedExpression += splitExpression[i];
 
                 }
 
@@ -306,47 +364,24 @@ public class REcompile {
             //Adds the 0's state to the FSM.
             FSMOutput.add(new ExpressionRecord(0, "", 1, -1));
 
-            //Keeps track if the last character seen was an \
+            //Keeps track if the last character seen was an \.
             boolean escaped = false;
 
             //Loop through the expression and formulate the FSM.
-            for(int i = 0; i <= splitExpression.length; i++)
+            for(int i = 0; i <= reformedExpression.length(); i++)
             {
-                //
-                int stateNumber = i++;
+                String[] parse = FSMOutput.get(0).findExpression(reformedExpression, i);
 
-                //
-                ExpressionRecord currentExpression;
-
-                //
-                if(escaped = false)
-                {
-                    currentExpression.findExpression(splitExpression, i)
-
-                }
-                else
-                {
-                    currentExpression.findExpression(splitExpression, i)
-
-                    escaped = false;
-
-                }
+                FSMOutput.add(new ExpressionRecord(i, parse[0], Integer.parseInt(parse[1]), Integer.parseInt(parse[2])));
 
             }
 
             //--------------------------------------------------- Output -----------------------------------------------
 
-            //Checks if the string is correctly reformed.
-            if(reformedExpression.contentEquals(regularExpression))
-            {
-                System.out.println("String correctly reformed!");
-
-            }
-
             //Prints the entire FSM to System.out.
             for(ExpressionRecord output : FSMOutput)
             {
-                System.out.println(output.toString()); //Yes I know it would call it anyway but it just LOOKS better, ya know?
+                System.out.println(output);
 
             }
 
